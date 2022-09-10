@@ -43,15 +43,11 @@ public class AppResource {
         Direction direction = Station.stationDirectionFromStation(station, finalStation);
         List<Routes> routes = Routes.findAll().list();
         Optional<Routes> optionalFinalRoute = routes.stream()
-                .peek(l -> System.out.println("here 1"))
                 .filter(route -> route.departure.direction == direction)
                 .filter(route -> route.stops.stream().anyMatch(s -> s.station.id == station.id))
-                .peek(l -> System.out.println("here 3"))
                 .filter(route -> route.stops.stream().anyMatch(s -> s.station.id == finalStation.id))
-                .peek(l -> System.out.println("here 4"))
                 // .filter(route -> route.stops.stream().allMatch(s ->
                 // isAfterNow(route.departure.hour, s.hour)))
-                .peek(l -> System.out.println("here 5"))
                 .sorted((r1, r2) -> toLocalTime(Stop.getStopFromStation(r1.stops, station).hour)
                         .isAfter(toLocalTime(Stop.getStopFromStation(r2.stops, station).hour)) ? -1 : 1)
                 .findFirst();

@@ -1,11 +1,13 @@
-# tta
+# TIB train API
 
-## Programación DAW Dual
+## Train Time Table service
 
-## Key-Concepts :dart: 
-- Nokia
-- Motorola
-- BlackBerry
+## Key-Concepts :dart:
 
-## UML
-![Custom UML](tta_UML.png)
+-   Timetables
+-   Quarkus and Hibernate
+-   Arriving on time
+
+## Related
+
+![Custom UML](timechart.png)
