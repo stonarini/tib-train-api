@@ -1,0 +1,36 @@
+#!/bin/sh
+
+RUNNING=$(pgrep -x dockerd)
+
+if [ -z "$RUNNING" ]; then
+	echo "ERROR: Docker is not running"
+	exit 1
+fi
+
+./mvnw clean package -Pnative \
+	-Dquarkus.profile=native \
+	-Dquarkus.native.container-build=true \
+	-Dquarkus.container-image.build=true \
+    -Dquarkus.native.native-image-xmx=8g \
+	-Dquarkus.container-image.group=stonarini \
+	-Dquarkus.container-image.additional-tags=native
+
+if [ $? -ne 0 ]; then
+	echo "ERROR: Error During Creation of Image"
+	exit 1
+fi
+
+read -p "PROMPT: Push Image to DockerHub? [Y/n]: " REPLY
+if [ "$REPLY" == "y" ] || [ "$REPLY" == "Y" ]; then
+	docker push -a stonarini/tta
+fi
+
+read -p "PROMPT: Run Dockerized Image? (docker-compose needed) [Y/n]: " REPLY
+if [ "$REPLY" == "y" ] || [ "$REPLY" == "Y" ]; then
+    docker compose >/dev/null
+    if [ $? -ne 0 ]; then
+	    echo "ERROR: Docker Compose is not Installed"
+	    exit 1
+    fi
+    docker compose up -d
+fi

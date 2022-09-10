@@ -1,0 +1,29 @@
+#!/bin/sh
+
+RUNNING=$(pgrep -x dockerd)
+
+if [ -z "$RUNNING" ]; then
+	echo "ERROR: Docker is not running"
+	exit 1
+fi
+
+./mvnw clean package \
+	-Dquarkus.container-image.build=true \
+    -Dquarkus.native.native-image-xmx=8g \
+	-Dquarkus.container-image.group=stonarini \
+	-Dquarkus.container-image.additional-tags=latest
+
+if [ $? -ne 0 ]; then
+	echo "ERROR: Error During Creation of Image"
+	exit 1
+fi
+
+read -p "PROMPT: Push Image to DockerHub? [Y/n]: " REPLY
+if [ "$REPLY" == "y" ] || [ "$REPLY" == "Y" ]; then
+	docker push -a stonarini/tta
+fi
+
+read -p "PROMPT: Run Dockerized Image? [Y/n]: " REPLY
+if [ "$REPLY" == "y" ] || [ "$REPLY" == "Y" ]; then
+	docker run -d --name tta -p 8080:8080 stonarini/tta
+fi
