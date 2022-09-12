@@ -1,23 +1,23 @@
 INSERT INTO
-	t_train (train_name)
+	TRAIN (TRAIN_NAME)
 VALUES
 	('T1'),
 	('T2'),
 	('T3');
 
 ALTER TABLE
-	t_station DROP CONSTRAINT fk_sr;
+	STATION DROP CONSTRAINT FK_STATION_RIGHT;
 
 ALTER TABLE
-	t_station DROP CONSTRAINT fk_sl;
+	STATION DROP CONSTRAINT FK_STATION_LEFT;
 
 INSERT INTO
-	t_station (
-		station_name,
-		station_right,
-		time_from_station_right,
-		station_left,
-		time_from_station_left
+	STATION (
+		STATION_NAME,
+		STATION_RIGHT,
+		TIME_FROM_STATION_RIGHT,
+		STATION_LEFT,
+	    TIME_FROM_STATION_LEFT
 	)
 VALUES
 	('Palma', null, null, 2, 1),
@@ -35,80 +35,73 @@ VALUES
 	('Alaro/Consell', 12, 3, 14, 3),
 	('Binissalem', 13, 3, 15, 3),
 	('Lloseta', 14, 3, 16, 4),
-	('Inca', 15, 4, 17, 5),
-	('Enllac Sa Pobla', 16, 5, 18, 4),
-	('Llubi', 17, 4, 19, 4),
-	('Muro', 18, 4, 20, 4),
-	('Sa Pobla', 19, 4, null, null),
-	('Enllac Manacor', 16, 5, 22, 14),
-	('Sineu', 21, 14, 23, 8),
-	('Petra', 22, 8, 24, 9),
-	('Manacor', 23, 9, null, null);
+    ('Inca (T1)', 15, 4, null, null),
+	('Inca (T2)', 15, 4, 18, 5),
+	('Enllac Sa Pobla', 17, 5, 19, 4),
+	('Llubi', 18, 4, 20, 4),
+	('Muro', 19, 4, 21, 4),
+	('Sa Pobla', 20, 4, null, null),
+    ('Inca (T3)', 15, 4, 23, 13),
+	('Sineu', 22, 13, 24, 8),
+	('Petra', 23, 8, 25, 9),
+	('Manacor', 24, 9, null, null);
 
 ALTER TABLE
-	t_station
+    STATION
 ADD
-	CONSTRAINT fk_sr FOREIGN KEY (station_right) REFERENCES t_station;
+	CONSTRAINT FK_STATION_RIGHT FOREIGN KEY (STATION_RIGHT) REFERENCES STATION;
 
 ALTER TABLE
-	t_station
+    STATION
 ADD
-	CONSTRAINT fk_sl FOREIGN KEY (station_left) REFERENCES t_station;
+	CONSTRAINT FK_STATION_LEFT FOREIGN KEY (STATION_LEFT) REFERENCES STATION;
 
 INSERT INTO
-	t_departure (direction, dep_hour)
+	ROUTE (TRAIN_ID, DIRECTION, DEPARTURE_HOUR)
 VALUES
-	('LEFT', '5:50');
+	(2, 'LEFT', '5:50'),
+	(3, 'RIGHT', '6:17');
 
 INSERT INTO
-	t_stops (group_id, station, arrival_time)
+    STOP (ROUTE_ID, STATION_ID)
 VALUES
-	(1, 1, '0'),
-	(1, 2, '1'),
-	(1, 3, '3'),
-	(1, 4, '4'),
-	(1, 5, '5'),
-	(1, 6, '7'),
-	(1, 7, '8'),
-	(1, 8, '10'),
-	(1, 9, '12'),
-	(1, 10, '14'),
-	(1, 11, '16'),
-	(1, 12, '21'),
-	(1, 13, '24'),
-	(1, 14, '27'),
-	(1, 15, '30'),
-	(1, 16, '35'),
-	(1, 17, '40'),
-	(1, 18, '44'),
-	(1, 19, '48'),
-	(1, 20, '52');
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (1, 4),
+    (1, 5),
+    (1, 6),
+    (1, 7),
+    (1, 8),
+    (1, 9),
+    (1, 10),
+    (1, 11),
+    (1, 12),
+    (1, 13),
+    (1, 14),
+    (1, 15),
+    (1, 16),
+    (1, 17),
+    (1, 18),
+    (1, 19),
+    (1, 20),
+    (2, 1),
+    (2, 2),
+    (2, 3),
+    (2, 4),
+    (2, 5),
+    (2, 6),
+    (2, 7),
+    (2, 8),
+    (2, 9),
+    (2, 10),
+    (2, 11),
+    (2, 12),
+    (2, 13),
+    (2, 14),
+    (2, 15),
+    (2, 22),
+    (2, 23),
+    (2, 24),
+    (2, 25);
 
-INSERT INTO
-	t_routes (train, departure)
-VALUES
-	(2, 1);
-
-INSERT INTO
-	route_stops (route_id, group_id)
-VALUES
-	(1, 1),
-	(1, 2),
-	(1, 3),
-	(1, 4),
-	(1, 5),
-	(1, 6),
-	(1, 7),
-	(1, 8),
-	(1, 9),
-	(1, 10),
-	(1, 11),
-	(1, 12),
-	(1, 13),
-	(1, 14),
-	(1, 15),
-	(1, 16),
-	(1, 17),
-	(1, 18),
-	(1, 19),
-	(1, 20);

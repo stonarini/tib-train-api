@@ -2,39 +2,63 @@
 package xyz.hostileobject.entities;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import xyz.hostileobject.resources.TimeUtils;
 
 @Entity
-@Table(name = "t_stops")
+@Table(name = "STOP")
 public class Stop extends PanacheEntityBase {
 	@Id
-	@Column(name = "stop_id")
+	@Column(name = "ID")
+	@JsonIgnore
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long id;
 
-	@Column(name = "group_id")
-	public Integer group;
+	@JsonIgnore
+	@JoinColumn(name = "ROUTE_ID")
+	@ManyToOne
+	public Route route;
 
 	@ManyToOne
-	@JoinColumn(name = "station")
+	@JoinColumn(name = "STATION_ID")
 	public Station station;
 
-	@Column(name = "arrival_time")
+	@Transient
 	public String hour;
-
 	public static Stop getStopFromStation(List<Stop> stops, Station station) {
-		Optional<Stop> stop = stops.stream().filter(s -> s.station.id == station.id).findFirst();
-		return stop.isPresent() ? stop.get() : null;
+		Optional<Stop> stop = stops.stream().filter(s -> Objects.equals(s.station.id, station.id)).findFirst();
+		return stop.orElse(null);
+	}
+
+	public String getArrivalTime(String departureTime, Direction direction) {
+		Integer arrivalTime = 0;
+		Station loopStation = this.station;
+		switch (direction.name()) {
+			case "LEFT":
+				while (loopStation.stationRight != null) {
+					arrivalTime += loopStation.timeFromStationRight;
+					loopStation = loopStation.stationRight;
+				}
+				break;
+			case "RIGHT":
+				while (loopStation.stationLeft != null) {
+					arrivalTime += loopStation.timeFromStationLeft;
+					if (Objects.equals(loopStation.name, "Lloseta")) {
+						loopStation = Station.find("STATION_NAME", "Inca (" + this.route.train.name +")").firstResult();
+					} else {
+						loopStation = loopStation.stationLeft;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+		return TimeUtils.sumTime(departureTime, arrivalTime.toString()).toString();
 	}
 }
