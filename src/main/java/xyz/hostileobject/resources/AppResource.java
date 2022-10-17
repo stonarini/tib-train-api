@@ -1,16 +1,17 @@
 package xyz.hostileobject.resources;
 
+import xyz.hostileobject.entities.Error;
+import xyz.hostileobject.entities.*;
+
+import javax.transaction.Transactional;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import xyz.hostileobject.entities.*;
-import xyz.hostileobject.entities.Error;
 
 @Path("/")
 public class AppResource {
@@ -29,7 +30,7 @@ public class AppResource {
                 .filter(route -> route.stops.stream().anyMatch(s -> Objects.equals(s.station.id, station.id) && TimeUtils.isAfterNow(s.getArrivalTime(route.departureHour, direction))))
                 .filter(route -> route.stops.stream().anyMatch(s -> Objects.equals(s.station.id, finalStation.id)))
                 .min((r1, r2) -> TimeUtils.compare(Stop.getStopFromStation(r1.stops, station).getArrivalTime(r1.departureHour, direction),
-                                                   Stop.getStopFromStation(r2.stops, station).getArrivalTime(r2.departureHour, direction)));
+                        Stop.getStopFromStation(r2.stops, station).getArrivalTime(r2.departureHour, direction)));
         if (optionalFinalRoute.isPresent()) {
             Route finalRoute = optionalFinalRoute.get();
             finalRoute.stops = finalRoute.stops.stream()
@@ -40,6 +41,61 @@ public class AppResource {
         }
         return Response.ok(new Error("No route found")).build();
 
+    }
+
+    @PUT
+    @Path("/createRoute")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Transactional
+    public Response createRoute(CreateRouteRq request) {
+        Route newRoute = new Route();
+        newRoute.train = Train.find("TRAIN_NAME", request.getTrainName()).firstResult();
+        newRoute.departureHour = request.getDepartureHour();
+        newRoute.direction = Objects.equals(request.getDepartureStation(), "Palma") ? Direction.LEFT : Direction.RIGHT;
+        newRoute.persist();
+
+        List<Stop> stopList = new ArrayList<Stop>();
+
+        switch (newRoute.train.name) {
+            case "T1":
+                stopList.add(new Stop(newRoute.id, 16));
+                break;
+            case "T2":
+                for (long i = 17; i <= 21; i++) {
+                    stopList.add(new Stop(newRoute.id, i));
+                }
+                break;
+            case "T3":
+                for (long i = 22; i <= 25; i++) {
+                    stopList.add(new Stop(newRoute.id, i));
+                }
+                break;
+        }
+
+        switch (request.getRouteType()) {
+            case DIRECT:
+                for (long i = 1; i <= 15; i++) {
+                    stopList.add(new Stop(newRoute.id, i));
+                }
+                break;
+            case SEMIDIRECT:
+                stopList.add(new Stop(newRoute.id, 1));
+                for (long i = 10; i <= 15; i++) {
+                    stopList.add(new Stop(newRoute.id, i));
+                }
+                break;
+            case METRO:
+                for (long i = 1; i <= 10; i++) {
+                    stopList.add(new Stop(newRoute.id, i));
+                }
+                break;
+        }
+        for (Stop stop : stopList) {
+            stop.persist();
+        }
+
+        return Response.status(Response.Status.CREATED).entity("Created new route").build();
     }
 
 }
