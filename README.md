@@ -10,4 +10,6 @@
 
 ## Related
 
+This API return next hour of next train.
+
 ![Custom UML](timechart.png)
