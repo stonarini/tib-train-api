@@ -78,6 +78,18 @@ public class AppResource {
 
     }
 
+    @GET
+    @Path("/all-routes")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRoutes() {
+        List<Route> routes = Route.findAll().list();
+        if (routes.size() > 0) {
+            return Response.ok(routes).build();
+        }
+        return Response.ok(new Error("No route found")).build();
+
+    }
+
     @PUT
     @Path("/createRoute")
     @Consumes(MediaType.APPLICATION_JSON)
